@@ -8,6 +8,8 @@
 #include <inttypes.h>
 #include <stdio.h>
 
+#define configUSE_PREEMPTION 1
+
 // helpful to use seconds as the default time unit
 #define mainTASK_CHATTERBOX_OUTPUT_FREQUENCY pdMS_TO_TICKS(1000UL)
 
@@ -68,37 +70,6 @@ static void useless_load(TaskParams *params, TickType_t duration) {
   }
 }
 
-static void chatterbox_task(void *v_params) {
-  TaskParams *params = (TaskParams *)v_params;
-
-  for(unsigned int i = 0; i < params->repetitions;i++) {
-    // printf("Start: Task %d (%d/%ld)\n", params->id, params->gpio,
-    //        params->release_time);
-    // printf("Inside while\n,");
-    // gpio_set_level(params->gpio ,1);
-    // vTaskDelay(params->release_time);
-    // printf("After delay\n");
-    // // delaying task till its release time
-    // useless_load(params, params->execution_time);
-    // printf("after useless_load\n");
-    // params->repetitions--;
-    // gpio_set_level(params->gpio ,0);
-    // if (params->repetitions == 0 && params->id == 3) {
-    //   break;
-    // }
-    TickType_t startTime = xTaskGetTickCount();
-    vTaskDelay((params->release_time * mainTASK_CHATTERBOX_OUTPUT_FREQUENCY) / portTICK_PERIOD_MS);
-    gpio_set_level(params->gpio, 1);
-    useless_load(params, params->execution_time);
-    gpio_set_level(params->gpio, 0);
-    TickType_t endTime = xTaskGetTickCount();
-    printf("%ld", ((params->release_time * mainTASK_CHATTERBOX_OUTPUT_FREQUENCY) / portTICK_PERIOD_MS) - (endTime - startTime));
-    vTaskDelay(((params->release_time * mainTASK_CHATTERBOX_OUTPUT_FREQUENCY) / portTICK_PERIOD_MS) - (endTime - startTime));
-  }
-
-  vTaskDelete(NULL);
-}
-
   /*--------------------------------------------------------------------
    * Subtask 1: Specify the task behavior.
    *
@@ -114,6 +85,25 @@ static void chatterbox_task(void *v_params) {
    *   helpful as documented here:
    *   https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html#_CPPv414gpio_set_level10gpio_num_t8uint32_t
    ---------------------------------------------------------------------*/
+static void chatterbox_task(void *v_params) {
+  TaskParams *params = (TaskParams *)v_params;
+  TickType_t x_time;
+  
+  while(params->repetitions > 0){  
+      vTaskDelay(params->release_time);
+
+      gpio_set_level(params->gpio, 1);
+      useless_load(params, params->execution_time);
+      gpio_set_level(params->gpio, 0);
+  
+    if((x_time = xTaskGetTickCount()%params->period) != 0) vTaskDelay(params->period - x_time + pdMS_TO_TICKS(1000));
+    
+    params->repetitions--;
+  }
+
+  vTaskDelete(NULL);
+}
+
 
 /*--------------------------------------------------------------------
  * Subtask 2: Initialize TaskParams for each task.
@@ -139,9 +129,9 @@ static void chatterbox_task(void *v_params) {
 // defing the various task parameters as in table
 TaskParams task1_params = { .id = 1,
                             .repetitions = -1,
-                            .release_time = 1,
+                            .release_time = pdMS_TO_TICKS(1000)/portTICK_PERIOD_MS,
                             .execution_time = 1,
-                            .period = 3,
+                            .period = pdMS_TO_TICKS(3000)/portTICK_PERIOD_MS,
                             .gpio = mainTASK_CHATTERBOX_TASK1_GPIO
                           };
 
@@ -149,14 +139,14 @@ TaskParams task2_params = { .id = 2,
                             .repetitions = -1,
                             .release_time = 0,
                             .execution_time = 2,
-                            .period = 4,
+                            .period = pdMS_TO_TICKS(4000)/portTICK_PERIOD_MS,
                             .gpio = mainTASK_CHATTERBOX_TASK2_GPIO
                           };
 TaskParams task3_params = { .id = 3,
                             .repetitions = 3,
                             .release_time = 0,
                             .execution_time = 1,
-                            .period = 6,
+                            .period = pdMS_TO_TICKS(6000)/portTICK_PERIOD_MS,
                             .gpio = mainTASK_CHATTERBOX_TASK3_GPIO
                           };
 
