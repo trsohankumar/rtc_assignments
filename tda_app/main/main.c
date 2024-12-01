@@ -42,13 +42,11 @@ void worst_case_simulation(TaskParams **params, unsigned int task_id,
   /*--------------------------------------------------------------------
    * Subtask 2: Implement the Worst Case Simulation from the lecture
    ---------------------------------------------------------------------*/
-  
-  for(int i = 0; i < task_id; i++) {
-    completion_time += (params[i]->execution_time*(params[task_id]->period/(double) params[i]->period));
+  for(int i = 0; i <= task_id; i++) {
+    completion_time += (params[i]->execution_time*ceil(params[task_id]->period/ (double) params[i]->period));
   }
 
   if(completion_time < params[task_id]->period) accepted = true;
-  
 
   result->accepted = accepted;
   result->task_info.wcs_result = completion_time;
@@ -62,20 +60,17 @@ void time_demand_analysis(TaskParams **params, unsigned int task_id,
   /*--------------------------------------------------------------------
    * Subtask 3: Implement the Time Demand Analysis from the lecture
    ---------------------------------------------------------------------*/
-  while((t_last > 0 && t_next > 0) && 
-        (t_last == t_next || t_next > params[task_id]->deadline)){
+  do{
       t_last = t_next;
-
-      if(t_next == 0){
-        for(int i = 0; i < task_id; i++) t_next += params[i]->execution_time;
+      t_next = 0;
+      if(t_last == 0){
+        for(int i = 0; i <= task_id; i++) t_next += params[i]->execution_time;
       }else{
-        for(int i = 0; i < task_id; i++) t_next += params[i]->execution_time*ceil(t_last/(double) params[i]->period);
+        for(int i = 0; i < task_id; i++) t_next += params[i]->execution_time*div_ceil(t_last, params[i]->period);
         t_next += params[task_id]->execution_time;
       }
+  }while((t_last != t_next && t_next < params[task_id]->deadline));
 
-  }
-
-  if(t_next <= params[task_id]->deadline && t_next == t_last) accepted = true;
 
   result->accepted = accepted;
   result->task_info.tda_result = t_next;
@@ -101,7 +96,7 @@ void acceptance_test(TaskParams **params, unsigned int task_id,
   worst_case_simulation(params, task_id, result);
   if(result->accepted == true) return;
 
-  // time_demand_analysis(params, task_id, result);
+  time_demand_analysis(params, task_id, result);
   if(result->accepted == true) return;
 
   result->accepted = false;

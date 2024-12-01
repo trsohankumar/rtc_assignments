@@ -27,13 +27,13 @@ void ssd1306_print_task_info(TaskParams *params, TaskInfo *task_info) {
   // print task name
   snprintf(val, 20, "Task %d: (%lu,%lu)", params->id, params->period,
            params->execution_time);
-  printf("Task %d: (%lu,%lu)", params->id, params->period,
+  printf("Task %d: (%lu,%lu)\n", params->id, params->period,
            params->execution_time);
   ssd1306_draw_string(ssd1306_dev, 10, 0, (const uint8_t *)val, 16, 1);
 
   // print cpu utilization
   ssd1306_draw_string(ssd1306_dev, 10, 16, (const uint8_t *)"Util:", 16, 1);
-  printf("%.03f", task_info->util);
+  printf("Utilization Test: %.03f\n", task_info->util);
   if (task_info->util > 0) {
     snprintf(val, 16, "%.03f", task_info->util);
     ssd1306_draw_string(ssd1306_dev, 70, 16, (const uint8_t *)val, 16, 1);
@@ -43,7 +43,7 @@ void ssd1306_print_task_info(TaskParams *params, TaskInfo *task_info) {
 
   // print completion time test
   ssd1306_draw_string(ssd1306_dev, 10, 32, (const uint8_t *)"WCS:", 16, 1);
-  printf("%lu", task_info->wcs_result);
+  printf("Completion Test: %lu\n", task_info->wcs_result);
   if (task_info->wcs_result > 0) {
     snprintf(val, 16, "%lu", task_info->wcs_result);    
     ssd1306_draw_string(ssd1306_dev, 70, 32, (const uint8_t *)val, 16, 1);
@@ -53,7 +53,7 @@ void ssd1306_print_task_info(TaskParams *params, TaskInfo *task_info) {
 
   // print completion time test
   ssd1306_draw_string(ssd1306_dev, 10, 48, (const uint8_t *)"TDA:", 16, 1);
-  printf("%lu", task_info->tda_result);
+  printf("TDA: %lu\n", task_info->tda_result);
   if (task_info->tda_result > 0) {
     snprintf(val, 16, "%lu", task_info->tda_result);
     ssd1306_draw_string(ssd1306_dev, 70, 48, (const uint8_t *)val, 16, 1);
