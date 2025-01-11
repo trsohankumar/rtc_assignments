@@ -1,3 +1,11 @@
+/*
+* Sohankumar Thaliyazcha Rajeeshkumar (3746060)
+* Giridhar Chinnikkaramadom Govindan (3747771) \\
+* Srinidhi Krishna Kalpathy Sundaram (3748589)
+* Guanyu Chen (3763205)
+*/
+
+// Display was not working, hence we have attaced the output logs of the three different tests.
 #include "display.h"
 #include "tasks.h"
 #include <math.h>
